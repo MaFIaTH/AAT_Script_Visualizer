@@ -1,0 +1,39 @@
+<SetSpeakerId> #Do not delete #Syntax: SpeakerID = Name / (optional) Translated Name
+0 = No Speaker / ไม่มีผู้พูด
+256 = ??? / ???
+512 = Phoenix Wright / ฟีนิกซ์ ไรท์
+1024 = Maya Fey / มายา เฟย์
+1536 = The Thinker / นักครุ่นคิด
+1792 = Mia Fey / มีอา เฟย์
+2048 = Judge / ศาล
+2304 = Miles Edgeworth / ไมล์ เอ็จเวิร์ด
+2560 = Winston Payne / วินสตัน เพย์น
+3072 = Melvin Grossberg / เมลวิน โกรสเบิร์ก
+3328 = Cellular Phone / โทรศัพท์มือถือ
+3840 = ??? / ???
+4864 = TV / ทีวี
+5120 = Dick Gumshoe / ดิก กัมชู
+5376 = Redd White / เรด ไวท์
+5632 = April May / เอพริว เมย์
+5888 = Bellboy / บ๋อย
+6400 = Larry Butz / แลร์รี่ บัตส์
+6656 = Frank Sahwit / แฟรงค์ ซาวิท
+6912 = Will Power / วิล พาวเวอร์
+4352 = Windy Oldbag / วินดี้ โอลแบก
+4096 = Penny
+</SetSpeakerId> #Do not delete
+
+<SetMessageTime> #Do not delete #Syntax: SetMessageTimeValue = Milliseconds / 10
+0 = 0
+1 = 50
+2 = 50
+3 = 50
+4 = 50
+5 = 70
+6 = 50
+7 = 60
+8 = 55
+9 = 50
+10 = 100
+255 = 50
+</SetMessageTime> #Do not delete

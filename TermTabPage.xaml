@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="AAT_Script_Visualizer.TermTabPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:AAT_Script_Visualizer"
+             mc:Ignorable="d"
+             d:DesignHeight="525" d:DesignWidth="1000">
+    <Grid>
+        <StackPanel>
+            <DockPanel LastChildFill="True">
+                <GroupBox DockPanel.Dock = "Top" Margin="0,5,0,5" HorizontalAlignment="Center" VerticalAlignment="Center" Header="Terms"> 
+                    <TextBox Name="termsBox" Height="400" Width="975" ToolTip="Edit your terms file here, don't forget to save after making change">
+                    </TextBox>
+                </GroupBox>
+            </DockPanel>
+            <DockPanel Margin="0,5,0,5" LastChildFill="False">
+                <Button DockPanel.Dock="Left" Margin="5,0,0,0" Padding="5,2" 
+                        ToolTip="Save edited terms to the file"
+                        Click="SaveButton_OnClick">
+                    Save
+                </Button>
+                <Button DockPanel.Dock="Left" Margin="5,0,0,0" Padding="5,2"
+                        ToolTip="Refresh changes made to the terms file, in case it was modified from the outside"
+                        Click="RefreshButton_OnClick">
+                    Refresh
+                </Button>
+                <Button DockPanel.Dock="Right" Margin="0,0,5,0" Padding="5,2" 
+                        ToolTip="Reset terms file to default (only use this if visualizers do not apply text command correctly)"
+                        Click="ResetButton_OnClick">
+                    Reset To Default
+                </Button>
+            </DockPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

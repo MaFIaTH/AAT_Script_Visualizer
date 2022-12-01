@@ -1,0 +1,59 @@
+﻿<Window x:Class="AAT_Script_Visualizer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:local="clr-namespace:AAT_Script_Visualizer"
+        xmlns:visualizerTabPage="clr-namespace:AAT_Script_Visualizer"
+        mc:Ignorable="d"
+        Title="AAT Text Visualizer" Height="650" Width="1250">
+    <Window.CommandBindings>
+        <CommandBinding Command="local:CustomCommand.newProject" CanExecute="CommandBinding_OnCanExecute"
+                        Executed="FileCommand">
+        </CommandBinding>
+        <CommandBinding Command="local:CustomCommand.openProject" CanExecute="CommandBinding_OnCanExecute"
+                        Executed="FileCommand">
+        </CommandBinding>
+        <CommandBinding Command="local:CustomCommand.save" CanExecute="CommandBinding_OnCanExecute"
+                        Executed="FileCommand">
+        </CommandBinding>
+        <CommandBinding Command="local:CustomCommand.saveAs" CanExecute="CommandBinding_OnCanExecute"
+                        Executed="FileCommand">
+        </CommandBinding>
+        <CommandBinding Command="local:CustomCommand.exportAs" CanExecute="CommandBinding_OnCanExecute"
+                        Executed="FileCommand">
+        </CommandBinding>
+    </Window.CommandBindings>
+    <Grid>
+        <StackPanel>
+            <DockPanel LastChildFill="False">
+                <Menu Background="{x:Null}">
+                    <MenuItem Header="File">
+                        <MenuItem Name = "newProject" Header="_New Project..." Command="local:CustomCommand.newProject"></MenuItem>
+                        <MenuItem Name = "openProject" Header="_Open Project..." Command="local:CustomCommand.openProject"></MenuItem>
+                        <Separator></Separator>
+                        <MenuItem Name = "save" Header="_Save"></MenuItem>
+                        <MenuItem Name = "saveAs" Header="_Save As..." Command="local:CustomCommand.saveAs"></MenuItem>
+                        <Separator></Separator>
+                        <MenuItem Name = "exportAs" Header="_Export As..." Command="local:CustomCommand.exportAs"></MenuItem>
+                    </MenuItem>
+                    <MenuItem Header="Options">
+                        <MenuItem Header="_Change Visualizer Font"></MenuItem>
+                    </MenuItem>
+                    <MenuItem Header="Help">
+                        
+                    </MenuItem>
+                </Menu>
+            </DockPanel>
+            <TabControl>
+                <TabItem Header="Visualizers">
+                    <local:VisualizerTabPage></local:VisualizerTabPage>
+                </TabItem>
+                <TabItem Header = "Terms">
+                    <local:TermTabPage></local:TermTabPage>
+                </TabItem>
+            </TabControl>
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,232 @@
+﻿<UserControl x:Class="AAT_Script_Visualizer.VisualizerTabPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:local="clr-namespace:AAT_Script_Visualizer"
+             mc:Ignorable="d"
+             d:DesignHeight="525" d:DesignWidth="1000" LostFocus="VisualizerTabPage_OnLostFocus">
+    <UserControl.Resources>
+        <ContextMenu x:Key="listViewItemContextMenu">
+            <MenuItem Header="Edit Value"
+                      IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, 
+                      Path=allowEditing}">
+                <StackPanel>
+                    <Label x:Name="currentValueLabel"></Label>
+                    <TextBox x:Name="newValueBox" Width="Auto"></TextBox>
+                    <Button Click="CopyValue_OnClick">Copy Current Value</Button>
+                    <Button Click="SaveValue_OnClick">Save</Button>
+                </StackPanel>
+            </MenuItem>
+            <MenuItem Header="Reset Value" Click="ResetValue_OnClick"
+                      IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, 
+                      Path=modified}">
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Remove Command" Click="RemoveCommand_OnClick"
+                      IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, 
+                      Path=inverseRemoved}">
+            </MenuItem>
+            <MenuItem Header="Revert Removal" Click="RevertRemoval_OnClick"
+                      IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}, 
+                      Path=removed}">
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="Add New Command To Top" />
+            <MenuItem Header="Add New Command To Bottom" />
+        </ContextMenu>
+    </UserControl.Resources>
+    <StackPanel Orientation="Horizontal">
+        <!-- Visualizers Area -->
+        <GroupBox Header="Visualizers Area">
+            <StackPanel Margin="10">
+                <DockPanel HorizontalAlignment="Left" Width="500" LastChildFill="False">
+                    <Label FontWeight="Bold" DockPanel.Dock="Left">Visualizer</Label>
+                    <Label FontWeight="Bold" DockPanel.Dock="Right">Translated</Label>
+                </DockPanel>
+
+                <WrapPanel Margin="0,10">
+                    <Border Margin="0,0,5,0" BorderThickness="1" BorderBrush="Coral" Height="Auto" Width="250">
+                        <StackPanel>
+                            <Label Name="translatedVisualizerSpeaker" HorizontalContentAlignment="Left"
+                                   Background="Black" Foreground="White" Content="[Speaker Name]">
+                            </Label>
+                            <Border Height="100" Width="Auto" BorderBrush="{x:Null}">
+                                <TextBlock Name="translatedVisualizer" Padding="5" FontFamily="TH Sarabun New"
+                                           FontSize="20" Background="Black" Foreground="White">
+                                </TextBlock>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                    <Border BorderThickness="1" BorderBrush="Black" Height="Auto" Width="Auto">
+                        <StackPanel>
+                            <Label Name="translatedFieldSpeaker" HorizontalContentAlignment="Left" Content="[Speaker Name]"></Label>
+                            <TextBlock Name="translatedField" Padding="5"
+                                     FontFamily="TH Sarabun New" FontSize="20"
+                                     IsEnabled="{Binding ElementName=enableEditing, Path=IsChecked}"
+                                     TextWrapping="Wrap" Height="100" Width="250"
+                                     Text="{Binding simplifiedTranslatedText}">
+                                <!-- <i:Interaction.Behaviors> -->
+                                <!--     <local:LineLimitingBehavior TextBoxMaxAllowedLines="3" /> -->
+                                <!-- </i:Interaction.Behaviors> -->
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,10">
+                    <StackPanel.Resources>
+                        <Style TargetType="Button">
+                            <Setter Property="Margin" Value="0,0,8,0" />
+                            <Setter Property="Padding" Value="5,2" />
+                        </Style>
+                    </StackPanel.Resources>
+                    <Button Name="previousButton" Width="Auto" Content="Previous" Click="PlayPrevious"
+                            ToolTip="Previous text box">
+                    </Button>
+                    <Button Name="restartButton" Width="Auto" Content="Restart" Click="RestartButton_OnClick"
+                            ToolTip="Restart current text box animation">
+                    </Button>
+                    <Button Name="nextButton" Width="Auto" Content="Next" Click="PlayNext"
+                            ToolTip="Next text box">
+                    </Button>
+                    <Separator Margin="0,0,8,0" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+                    <Button Name="playButton" Width="Auto" Content="Play" Click="PlayButton_OnClick"
+                            ToolTip="Play through the entire script automatically">
+                    </Button>
+                    <Button Name="stopButton" Width="Auto" Content="Stop" Click="StopButton_OnClick"
+                            ToolTip="Stopping playing through">
+                    </Button>
+                    <!-- <Separator Margin="0,0,8,0" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" /> -->
+                    <!-- <Button Name="copyFromOriginalButton" Width="Auto" Content="Copy From Original" -->
+                    <!--         Click="CopyFromOriginalButton_OnClick" ToolTip="Copy text from original text field to translated text field"> -->
+                    <!-- </Button> -->
+                    <!-- <Button Name="applyButton" Width="Auto" Content="Apply" -->
+                    <!--         ToolTip="Apply modified text into the translated list"> -->
+                    <!-- </Button> -->
+                </StackPanel>
+                <!-- <Label FontWeight="Bold">Edit Options</Label> -->
+                <!-- <CheckBox Name="enableEditing" Checked="ShowRaw_OnCheckChange" Unchecked="ShowRaw_OnCheckChange" -->
+                <!--           ToolTip="Enable translated field for editing"> -->
+                <!--     Enable Editing -->
+                <!-- </CheckBox> -->
+                <!-- <CheckBox Name="showRaw" Checked="ShowRaw_OnCheckChange" Unchecked="ShowRaw_OnCheckChange" -->
+                <!--           ToolTip="Show all commands available for editing in translated field"> -->
+                <!--     Show Raw -->
+                <!-- </CheckBox> -->
+                <Separator Margin="0,8,0,0"></Separator>
+
+                <DockPanel Margin="0,10,0,0" HorizontalAlignment="Left" Width="500" LastChildFill="False">
+                    <Label FontWeight="Bold" DockPanel.Dock="Left">Visualizer</Label>
+                    <Label FontWeight="Bold" DockPanel.Dock="Right">Original</Label>
+                </DockPanel>
+
+                <WrapPanel Margin="0,10">
+                    <Border Margin="0,0,5,0" BorderThickness="1" BorderBrush="Coral" Height="Auto" Width="250">
+                        <StackPanel>
+                            <Label Name="originalVisualizerSpeaker" HorizontalContentAlignment="Left"
+                                   Background="Black" Foreground="White" Content="[Speaker Name]">
+                            </Label>
+                            <Border Height="100" Width="Auto">
+                                <TextBlock Padding="5" Name="originalVisualizer" FontFamily="TH Sarabun New"
+                                           FontSize="20" Background="Black" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                    <Border BorderThickness="1" BorderBrush="Black" Height="Auto" Width="250">
+                        <StackPanel>
+                            <Label Name="originalFieldSpeaker" HorizontalContentAlignment="Left" Content="[Speaker Name]"></Label>
+                            <TextBlock Padding="5" Name="originalField" FontFamily="TH Sarabun New"
+                                       FontSize="20" TextWrapping="Wrap" Text="{Binding simplifiedOriginalText}"
+                                       Height="100" Width="250"/>
+                        </StackPanel>
+                    </Border>
+                </WrapPanel>
+            </StackPanel>
+        </GroupBox>
+        <!-- Command List Area -->
+        <GroupBox Header="Script List Area">
+            <StackPanel>
+                <WrapPanel>
+                    <ListView Name="translatedListView" MaxHeight="470" ScrollViewer.VerticalScrollBarVisibility="Visible"
+                              ScrollViewer.CanContentScroll="True" VirtualizingStackPanel.IsVirtualizing="True"
+                              VirtualizingStackPanel.VirtualizationMode="Recycling"
+                              ScrollViewer.IsDeferredScrollingEnabled="True">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Line Index" DisplayMemberBinding="{Binding linesIndex}"></GridViewColumn>
+                                <GridViewColumn Header="Command" DisplayMemberBinding="{Binding command}"></GridViewColumn>
+                                <GridViewColumn Header="Value" DisplayMemberBinding="{Binding value}" Width="Auto"></GridViewColumn>
+                                <GridViewColumn Header="Flag" DisplayMemberBinding="{Binding flag}"></GridViewColumn>
+                                <!-- <GridViewColumn Header="Status" DisplayMemberBinding="{Binding status}"></GridViewColumn> -->
+                            </GridView>
+                        </ListView.View>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <EventSetter Event="PreviewMouseDoubleClick" Handler="ListViewItemDoubleClick" />
+                                <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListViewRightMouseClick"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding status}"
+                                                 Value="Current Block">
+                                        <Setter Property="Background"
+                                                Value="Yellow" />
+                                        <Setter Property="Foreground" Value="Black"></Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding flag}"
+                                                 Value="Modified">
+                                        <Setter Property="Background"
+                                                Value="Orange" />
+                                        <Setter Property="Foreground" Value="Black"></Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding flag}"
+                                                 Value="Removed">
+                                        <Setter Property="Background"
+                                                Value="Red" />
+                                        <Setter Property="Foreground" Value="Black"></Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding flag}"
+                                                 Value="Added">
+                                        <Setter Property="Background"
+                                                Value="Green" />
+                                        <Setter Property="Foreground" Value="Black"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                    </ListView>
+                    <StackPanel Margin="10,0,0,0">
+                        <Label FontWeight="Bold">Translated List</Label>
+                        <TextBlock>Search</TextBlock>
+                        <TextBox Name="listSearchBox" TextChanged="RefreshList" ToolTip="Type your search keywords"></TextBox>
+                        <CheckBox Name="caseSensitive" Checked="RefreshList" Unchecked="RefreshList"
+                                  ToolTip="List item's alphabetical case has to match search keywords">
+                            Case Sensitive
+                        </CheckBox>
+                        <CheckBox Name="exactMatch" Checked="RefreshList" Unchecked="RefreshList"
+                                  ToolTip="List item's name has to match search keywords one to one">
+                            Exact Match
+                        </CheckBox>
+                        <CheckBox Name="ignoreLineIndex" Checked="RefreshList" Unchecked="RefreshList"
+                                  ToolTip="Ignore line index search">
+                            Ignore Line Index Search
+                        </CheckBox>
+                        <CheckBox Name="ignoreCommand" Checked="RefreshList" Unchecked="RefreshList"
+                                  ToolTip="Ignore command search">
+                            Ignore Command Search
+                        </CheckBox>
+                        <CheckBox Name="ignoreValue" Checked="RefreshList" Unchecked="RefreshList"
+                                  ToolTip="Ignore value search">
+                            Ignore Value Search
+                        </CheckBox>
+                        <CheckBox Name="ignoreFlag" Checked="RefreshList" Unchecked="RefreshList"
+                                  ToolTip="Ignore flag search">
+                            Ignore Flag Search
+                        </CheckBox>
+                        <Button Name="jumpButton" Click="JumpButton_OnClick">Jump to Current Block</Button>
+                    </StackPanel>
+                </WrapPanel>
+            </StackPanel>
+        </GroupBox>
+    </StackPanel>
+</UserControl>
