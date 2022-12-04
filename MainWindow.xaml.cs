@@ -55,6 +55,7 @@ namespace AAT_Script_Visualizer
             if (name.Equals("Save As") || name.Equals("saveAs"))
             {
                 string saveDirectory = FileDialog("Save As");
+                recentDirectory = saveDirectory;
                 if (String.IsNullOrEmpty(saveDirectory))
                 {
                     return;
@@ -64,6 +65,7 @@ namespace AAT_Script_Visualizer
             if (name.Equals("Export As") || name.Equals("exportAs"))
             {
                 string exportDirectory = FileDialog("Export As");
+                recentDirectory = exportDirectory;
                 if (String.IsNullOrEmpty(exportDirectory))
                 {
                     return;
@@ -89,6 +91,7 @@ namespace AAT_Script_Visualizer
                     }
                 }
                 string originalDirectory = FileDialog("Open Original File");
+                recentDirectory = originalDirectory;
                 if (String.IsNullOrEmpty(originalDirectory))
                 {
                     return;
@@ -141,6 +144,7 @@ namespace AAT_Script_Visualizer
                     }
                 }
                 string directory = FileDialog(name);
+                recentDirectory = directory;
                 if (directory == null)
                 {
                     return;
@@ -287,7 +291,6 @@ namespace AAT_Script_Visualizer
                 }
                 if (openDialog.ShowDialog() == CommonFileDialogResult.Ok)
                 {
-                    recentDirectory = openDialog.FileName;
                     return openDialog.FileName;
                 }
                 return null;
@@ -304,7 +307,6 @@ namespace AAT_Script_Visualizer
                 saveDialog.AddExtension = forceExtension;
                 if (saveDialog.ShowDialog() == true)
                 {
-                    recentDirectory = openDialog.FileName;
                     return saveDialog.FileName;
                 }
                 return null;
