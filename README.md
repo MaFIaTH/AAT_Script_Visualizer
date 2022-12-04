@@ -24,7 +24,7 @@ This tool is supposed to be treated as a proofreader with editing options for fi
 
 Make sure that the script files (both original and translated) are already converted to .txt (might support auto-conversion for later updates).
 
-**Basic Usage:**
+**Usage:**
 1. Download the latest pre-build release and extracted the file to your working directory.
 
 2. Launch the tool and go to File -> New Project...
@@ -41,7 +41,7 @@ Make sure that the script files (both original and translated) are already conve
 
 8. For exporting, go to File -> Export As... then select your export directory.
 
-## Advance Usage:
+## For More Details:
 - Visit [Wiki][Wiki] for more information/usage/description.
 - Visit [FAQ][FAQ] for questions regarding usage/bugs/known problems.
 
