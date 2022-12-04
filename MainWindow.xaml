@@ -7,7 +7,8 @@
         xmlns:local="clr-namespace:AAT_Script_Visualizer"
         xmlns:visualizerTabPage="clr-namespace:AAT_Script_Visualizer"
         mc:Ignorable="d"
-        Title="AAT Text Visualizer" Height="650" Width="1250">
+        Title="AAT Text Visualizer" Height="650" Width="1250"
+        Closing="MainWindow_OnClosing">
     <Window.CommandBindings>
         <CommandBinding Command="local:CustomCommand.newProject" CanExecute="CommandBinding_OnCanExecute"
                         Executed="FileCommand">
@@ -33,22 +34,38 @@
                         <MenuItem Name = "newProject" Header="_New Project..." Command="local:CustomCommand.newProject"></MenuItem>
                         <MenuItem Name = "openProject" Header="_Open Project..." Command="local:CustomCommand.openProject"></MenuItem>
                         <Separator></Separator>
-                        <MenuItem Name = "save" Header="_Save"></MenuItem>
-                        <MenuItem Name = "saveAs" Header="_Save As..." Command="local:CustomCommand.saveAs"></MenuItem>
+                        <MenuItem Name="save" Header="_Save" Command="local:CustomCommand.save"
+                                  IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, 
+                                  AncestorType={x:Type local:ProjectSystem}}, 
+                                  Path=isProjectOpened}">
+                      
+                        </MenuItem>
+                        <MenuItem Name="saveAs" Header="_Save As..." Command="local:CustomCommand.saveAs"
+                                  IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, 
+                                  AncestorType={x:Type local:ProjectSystem}}, 
+                                  Path=isProjectOpened}">
+                            
+                        </MenuItem>
                         <Separator></Separator>
-                        <MenuItem Name = "exportAs" Header="_Export As..." Command="local:CustomCommand.exportAs"></MenuItem>
+                        <MenuItem Name="exportAs" Header="_Export As..." Command="local:CustomCommand.exportAs"
+                                  IsEnabled="{Binding RelativeSource={RelativeSource FindAncestor, 
+                                  AncestorType={x:Type local:ProjectSystem}}, 
+                                  Path=isProjectOpened}">
+                            
+                        </MenuItem>
                     </MenuItem>
                     <MenuItem Header="Options">
-                        <MenuItem Header="_Change Visualizer Font"></MenuItem>
+                        <MenuItem Header="_Change Visualizer Font" Click="FontChanger_OnClick"></MenuItem>
                     </MenuItem>
                     <MenuItem Header="Help">
-                        
+                        <MenuItem Header="_Check Wiki" Click="CheckWiki_OnClick"></MenuItem>
+                        <MenuItem Header="_Check Version" Click="CheckVersion_OnClick"></MenuItem>
                     </MenuItem>
                 </Menu>
             </DockPanel>
             <TabControl>
                 <TabItem Header="Visualizers">
-                    <local:VisualizerTabPage></local:VisualizerTabPage>
+                    <local:VisualizerTabPage x:Name="visualizerTabPage"></local:VisualizerTabPage>
                 </TabItem>
                 <TabItem Header = "Terms">
                     <local:TermTabPage></local:TermTabPage>

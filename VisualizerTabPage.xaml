@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              xmlns:local="clr-namespace:AAT_Script_Visualizer"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
              d:DesignHeight="525" d:DesignWidth="1000" LostFocus="VisualizerTabPage_OnLostFocus">
     <UserControl.Resources>
@@ -33,9 +34,24 @@
                       Path=removed}">
             </MenuItem>
             <Separator/>
-            <MenuItem Header="Add New Command To Top" />
-            <MenuItem Header="Add New Command To Bottom" />
+            <MenuItem x:Name="addTopMenuItem" Header="Add New Command To Top">
+                <MenuItem.ItemContainerStyle>
+                    <Style TargetType="{x:Type MenuItem}">
+                        <EventSetter Event="PreviewMouseLeftButtonDown" Handler="AddTop_OnClick"></EventSetter>
+                    </Style>
+                </MenuItem.ItemContainerStyle>
+            </MenuItem>
+            <MenuItem x:Name="addBottomMenuItem" Header="Add New Command To Bottom">
+                <MenuItem.ItemContainerStyle>
+                    <Style TargetType="{x:Type MenuItem}">
+                        <EventSetter Event="PreviewMouseLeftButtonDown" Handler="AddBottom_OnClick"></EventSetter>
+                    </Style>
+                </MenuItem.ItemContainerStyle>
+            </MenuItem>
         </ContextMenu>
+        <FontFamily x:Key="visualizerFontFamily">Segoe UI</FontFamily>
+        <FontWeight x:Key="visualizerFontWeight">Regular</FontWeight>
+        <sys:Double x:Key="visualizerFontSize">14</sys:Double>
     </UserControl.Resources>
     <StackPanel Orientation="Horizontal">
         <!-- Visualizers Area -->
@@ -53,8 +69,10 @@
                                    Background="Black" Foreground="White" Content="[Speaker Name]">
                             </Label>
                             <Border Height="100" Width="Auto" BorderBrush="{x:Null}">
-                                <TextBlock Name="translatedVisualizer" Padding="5" FontFamily="TH Sarabun New"
-                                           FontSize="20" Background="Black" Foreground="White">
+                                <TextBlock Name="translatedVisualizer" Padding="5" 
+                                           FontFamily="{DynamicResource visualizerFontFamily}"
+                                           FontSize="{DynamicResource visualizerFontSize}" 
+                                           FontWeight="{DynamicResource visualizerFontWeight}" Background="Black" Foreground="White">
                                 </TextBlock>
                             </Border>
                         </StackPanel>
@@ -62,14 +80,12 @@
                     <Border BorderThickness="1" BorderBrush="Black" Height="Auto" Width="Auto">
                         <StackPanel>
                             <Label Name="translatedFieldSpeaker" HorizontalContentAlignment="Left" Content="[Speaker Name]"></Label>
-                            <TextBlock Name="translatedField" Padding="5"
-                                     FontFamily="TH Sarabun New" FontSize="20"
-                                     IsEnabled="{Binding ElementName=enableEditing, Path=IsChecked}"
-                                     TextWrapping="Wrap" Height="100" Width="250"
-                                     Text="{Binding simplifiedTranslatedText}">
-                                <!-- <i:Interaction.Behaviors> -->
-                                <!--     <local:LineLimitingBehavior TextBoxMaxAllowedLines="3" /> -->
-                                <!-- </i:Interaction.Behaviors> -->
+                            <TextBlock Name="translatedField" Padding="5" 
+                                       FontFamily="{DynamicResource visualizerFontFamily}"
+                                       FontSize="{DynamicResource visualizerFontSize}"
+                                       FontWeight="{DynamicResource visualizerFontWeight}"
+                                       TextWrapping="Wrap" Height="100" Width="250" 
+                                       Text="{Binding simplifiedTranslatedText}">
                             </TextBlock>
                         </StackPanel>
                     </Border>
@@ -98,23 +114,7 @@
                     <Button Name="stopButton" Width="Auto" Content="Stop" Click="StopButton_OnClick"
                             ToolTip="Stopping playing through">
                     </Button>
-                    <!-- <Separator Margin="0,0,8,0" Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" /> -->
-                    <!-- <Button Name="copyFromOriginalButton" Width="Auto" Content="Copy From Original" -->
-                    <!--         Click="CopyFromOriginalButton_OnClick" ToolTip="Copy text from original text field to translated text field"> -->
-                    <!-- </Button> -->
-                    <!-- <Button Name="applyButton" Width="Auto" Content="Apply" -->
-                    <!--         ToolTip="Apply modified text into the translated list"> -->
-                    <!-- </Button> -->
                 </StackPanel>
-                <!-- <Label FontWeight="Bold">Edit Options</Label> -->
-                <!-- <CheckBox Name="enableEditing" Checked="ShowRaw_OnCheckChange" Unchecked="ShowRaw_OnCheckChange" -->
-                <!--           ToolTip="Enable translated field for editing"> -->
-                <!--     Enable Editing -->
-                <!-- </CheckBox> -->
-                <!-- <CheckBox Name="showRaw" Checked="ShowRaw_OnCheckChange" Unchecked="ShowRaw_OnCheckChange" -->
-                <!--           ToolTip="Show all commands available for editing in translated field"> -->
-                <!--     Show Raw -->
-                <!-- </CheckBox> -->
                 <Separator Margin="0,8,0,0"></Separator>
 
                 <DockPanel Margin="0,10,0,0" HorizontalAlignment="Left" Width="500" LastChildFill="False">
@@ -129,16 +129,21 @@
                                    Background="Black" Foreground="White" Content="[Speaker Name]">
                             </Label>
                             <Border Height="100" Width="Auto">
-                                <TextBlock Padding="5" Name="originalVisualizer" FontFamily="TH Sarabun New"
-                                           FontSize="20" Background="Black" Foreground="White"/>
+                                <TextBlock Padding="5" Name="originalVisualizer" 
+                                           FontFamily="{DynamicResource visualizerFontFamily}"
+                                           FontWeight="{DynamicResource visualizerFontWeight}"
+                                           FontSize="{DynamicResource visualizerFontSize}" Background="Black" Foreground="White"/>
                             </Border>
                         </StackPanel>
                     </Border>
                     <Border BorderThickness="1" BorderBrush="Black" Height="Auto" Width="250">
                         <StackPanel>
                             <Label Name="originalFieldSpeaker" HorizontalContentAlignment="Left" Content="[Speaker Name]"></Label>
-                            <TextBlock Padding="5" Name="originalField" FontFamily="TH Sarabun New"
-                                       FontSize="20" TextWrapping="Wrap" Text="{Binding simplifiedOriginalText}"
+                            <TextBlock Padding="5" Name="originalField" 
+                                       FontFamily="{DynamicResource visualizerFontFamily}"
+                                       FontWeight="{DynamicResource visualizerFontWeight}"
+                                       FontSize="{DynamicResource visualizerFontSize}" 
+                                       TextWrapping="Wrap" Text="{Binding simplifiedOriginalText}"
                                        Height="100" Width="250"/>
                         </StackPanel>
                     </Border>
@@ -155,17 +160,16 @@
                               ScrollViewer.IsDeferredScrollingEnabled="True">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="Line Index" DisplayMemberBinding="{Binding linesIndex}"></GridViewColumn>
-                                <GridViewColumn Header="Command" DisplayMemberBinding="{Binding command}"></GridViewColumn>
-                                <GridViewColumn Header="Value" DisplayMemberBinding="{Binding value}" Width="Auto"></GridViewColumn>
-                                <GridViewColumn Header="Flag" DisplayMemberBinding="{Binding flag}"></GridViewColumn>
-                                <!-- <GridViewColumn Header="Status" DisplayMemberBinding="{Binding status}"></GridViewColumn> -->
+                                <GridViewColumn Header="Line Index" Width="Auto" DisplayMemberBinding="{Binding linesIndex}"></GridViewColumn>
+                                <GridViewColumn Header="Command" Width="Auto" DisplayMemberBinding="{Binding command}"></GridViewColumn>
+                                <GridViewColumn Header="Value" Width="Auto" DisplayMemberBinding="{Binding value}"></GridViewColumn>
+                                <GridViewColumn Header="Flag" Width="Auto" DisplayMemberBinding="{Binding flag}"></GridViewColumn>
                             </GridView>
                         </ListView.View>
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
-                                <EventSetter Event="PreviewMouseDoubleClick" Handler="ListViewItemDoubleClick" />
-                                <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListViewRightMouseClick"/>
+                                <EventSetter Event="PreviewMouseDoubleClick" Handler="ListViewItem_OnDoubleClick" />
+                                <EventSetter Event="PreviewMouseRightButtonDown" Handler="ListViewItem_OnRightMouseClick"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding status}"
                                                  Value="Current Block">
@@ -182,13 +186,13 @@
                                     <DataTrigger Binding="{Binding flag}"
                                                  Value="Removed">
                                         <Setter Property="Background"
-                                                Value="Red" />
+                                                Value="Crimson" />
                                         <Setter Property="Foreground" Value="Black"></Setter>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding flag}"
                                                  Value="Added">
                                         <Setter Property="Background"
-                                                Value="Green" />
+                                                Value="LawnGreen" />
                                         <Setter Property="Foreground" Value="Black"></Setter>
                                     </DataTrigger>
                                 </Style.Triggers>

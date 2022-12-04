@@ -5,12 +5,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:AAT_Script_Visualizer"
              mc:Ignorable="d"
-             d:DesignHeight="525" d:DesignWidth="1000">
+             d:DesignHeight="525" d:DesignWidth="1000" GotFocus="TermTabPage_OnGotFocus">
     <Grid>
         <StackPanel>
             <DockPanel LastChildFill="True">
                 <GroupBox DockPanel.Dock = "Top" Margin="0,5,0,5" HorizontalAlignment="Center" VerticalAlignment="Center" Header="Terms"> 
-                    <TextBox Name="termsBox" Height="400" Width="975" ToolTip="Edit your terms file here, don't forget to save after making change">
+                    <TextBox Name="termsBox" Height="400" Width="975" AcceptsReturn="True"
+                             ToolTip="Edit your terms file here, don't forget to save after making change">
                     </TextBox>
                 </GroupBox>
             </DockPanel>

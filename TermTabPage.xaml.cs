@@ -11,7 +11,6 @@ namespace AAT_Script_Visualizer
         public TermTabPage()
         {
             InitializeComponent();
-            ReadTerms(currentTermsPath);
         }
 
         private void ReadTerms(string path)
@@ -60,6 +59,11 @@ namespace AAT_Script_Visualizer
         {
             ReadTerms(backupTermsPath);
             SaveTerms();
+        }
+
+        private void TermTabPage_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            ReadTerms(currentTermsPath);
         }
     }
 }

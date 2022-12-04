@@ -124,11 +124,31 @@ namespace AAT_Script_Visualizer
         {
             List<ListData> itemSource = (translatedListView.ItemsSource as List<ListData>);
             //Error prevention if itemSource is not initialized yet
-            if (itemSource.Count <= 0)
+            if (itemSource.Count <= 0 || topTranslatedBlockIndex <= 0)
             {
                 return;
             }
-            SetCurrentBlock(topBlockIndex - 1, itemSource);
+            //Reset previous block status to String.Empty
+            if (bottomTranslatedBlockIndex > -1 && topTranslatedBlockIndex > -1)
+            {
+                for (int i = topTranslatedBlockIndex; i <= bottomTranslatedBlockIndex; i++)
+                {
+                    translatedListDataList[i].status = String.Empty;
+                }
+            }
+            if (!SetCurrentBlock(topTranslatedBlockIndex - 1, itemSource, out topTranslatedBlockIndex, out bottomTranslatedBlockIndex))
+            {
+                return;
+            }
+            if (!SetCurrentBlock(topOriginalBlockIndex - 1, originalListDataList, out topOriginalBlockIndex, out bottomOriginalBlockIndex))
+            {
+                return;
+            }
+            //Set status to Current Block
+            for (int i = topTranslatedBlockIndex; i <= bottomTranslatedBlockIndex; i++)
+            {
+                translatedListDataList[i].status = "Current Block";
+            }
             GetTextValue();
             JumpToCurrentBlock();
             PlayAnimation();
@@ -146,12 +166,32 @@ namespace AAT_Script_Visualizer
                 StopPlaying();
                 return;
             }
+            if (topTranslatedBlockIndex < 0 && bottomTranslatedBlockIndex < 0)
+            {
+                if (!SetCurrentBlock(1, itemSource, out topTranslatedBlockIndex, out bottomTranslatedBlockIndex))
+                {
+                    return;
+                }
+            }
+            if (topOriginalBlockIndex < 0 && bottomOriginalBlockIndex < 0)
+            {
+                if (!SetCurrentBlock(1, originalListDataList, out topOriginalBlockIndex, out bottomOriginalBlockIndex))
+                {
+                    return;
+                }
+            }
+            //Set status to Current Block
+            for (int i = topTranslatedBlockIndex; i <= bottomTranslatedBlockIndex; i++)
+            {
+                translatedListDataList[i].status = "Current Block";
+            }
             List<ListData> itemSource1 = (translatedListView.ItemsSource as List<ListData>);
             List<ListData> itemSource2 = originalListDataList;
-            SetSpeakerName(itemSource1, new []{translatedFieldSpeaker, translatedVisualizerSpeaker}, false);
-            SetSpeakerName(itemSource2, new []{originalFieldSpeaker, originalVisualizerSpeaker}, true);
-            TextAnimation(itemSource1, translatedVisualizer);
-            TextAnimation(itemSource2, originalVisualizer);
+            SetSpeakerName(itemSource1, new[] { translatedFieldSpeaker, translatedVisualizerSpeaker }, false,
+                bottomTranslatedBlockIndex);
+            SetSpeakerName(itemSource2, new []{originalFieldSpeaker, originalVisualizerSpeaker}, true, bottomOriginalBlockIndex);
+            TextAnimation(itemSource1, translatedVisualizer, topTranslatedBlockIndex, bottomTranslatedBlockIndex);
+            TextAnimation(itemSource2, originalVisualizer, topOriginalBlockIndex, bottomOriginalBlockIndex);
         }
         private void PlayNext(object sender, RoutedEventArgs e)
         {
@@ -161,12 +201,36 @@ namespace AAT_Script_Visualizer
         {
             List<ListData> itemSource = (translatedListView.ItemsSource as List<ListData>);
             //Error prevention if itemSource is not initialized yet
-            if (itemSource.Count <= 0 || bottomBlockIndex >= itemSource.Count - 1)
+            if (itemSource.Count <= 0 || bottomTranslatedBlockIndex >= itemSource.Count - 1)
             {
                 StopPlaying();
                 return;
             }
-            SetCurrentBlock(bottomBlockIndex + 1, itemSource);
+            //Reset previous block status to String.Empty
+            if (bottomTranslatedBlockIndex > -1 && topTranslatedBlockIndex > -1)
+            {
+                for (int i = topTranslatedBlockIndex; i <= bottomTranslatedBlockIndex; i++)
+                {
+                    translatedListDataList[i].status = String.Empty;
+                }
+            }
+            if (topTranslatedBlockIndex < 0 || bottomTranslatedBlockIndex < 0)
+            {
+                return;
+            }
+            if (!SetCurrentBlock(bottomTranslatedBlockIndex + 1, itemSource, out topTranslatedBlockIndex, out bottomTranslatedBlockIndex))
+            {
+                return;
+            }
+            if (!SetCurrentBlock(bottomOriginalBlockIndex + 1, originalListDataList, out topOriginalBlockIndex, out bottomOriginalBlockIndex))
+            {
+                return;
+            }
+            //Set status to Current Block
+            for (int i = topTranslatedBlockIndex; i <= bottomTranslatedBlockIndex; i++)
+            {
+                translatedListDataList[i].status = "Current Block";
+            }
             GetTextValue();
             JumpToCurrentBlock();
             PlayAnimation();
@@ -177,7 +241,7 @@ namespace AAT_Script_Visualizer
         public static bool isPlaying = false;
         private static int counter = 0;
         public void PlayButton_OnClick(object sender, RoutedEventArgs e)
-        { 
+        {
             AutoPlay(true);
         }
         public void AutoPlay(bool fromButton)
@@ -212,39 +276,65 @@ namespace AAT_Script_Visualizer
             counter = 0;
         }
         #endregion
-        
-        #region Text Modification Control
-        /*
-        private void CopyFromOriginalButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            entryField.SetValue(TextBox.TextProperty, originalField.Text);
-        }
-        */
-        #endregion
-        
+
         #region ListView Control
-        private void ListViewItemDoubleClick(object sender, MouseButtonEventArgs e)
+        private void ListViewItem_OnDoubleClick(object sender, MouseButtonEventArgs e)
         {
             ListViewItem listViewItem = sender as ListViewItem;
             ListView listView = ItemsControl.ItemsControlFromItemContainer(listViewItem) as ListView;
-            List<ListData> itemSource = (listView.ItemsSource as List<ListData>);
+            List<ListData> translatedItemSource = (listView.ItemsSource as List<ListData>);
             var command = (listViewItem.Content as ListData).command;
             var value = (listViewItem.Content as ListData).value;
             var lineIndex = (listViewItem.Content as ListData).linesIndex;
-            int currentIndex = -1;
+            int currentTranslatedIndex = -1;
+            int currentOriginalIndex = -1;
             int topIndex = -1;
             int bottomIndex = -1;
             //Get current index by finding matching linesIndex
-            foreach (var info in itemSource.Select((v, i) => new {v, i}))
+            foreach (var info in translatedItemSource.Select((v, i) => new {v, i}))
             {
                 if (info.v.linesIndex == lineIndex)
                 {
-                    currentIndex = info.i;
+                    currentTranslatedIndex = info.i;
                     //tempListDataList[currentIndex].status = "Current Block";
                     break;
                 }
             }
-            SetCurrentBlock(currentIndex, itemSource);
+            //Get current index by finding matching linesIndex
+            foreach (var info in originalListDataList.Select((v, i) => new {v, i}))
+            {
+                string basedIndex = lineIndex;
+                if (lineIndex.Contains('-') || lineIndex.Contains('+'))
+                {
+                    basedIndex = basedIndex.Remove(basedIndex.Length - 1);
+                }
+                if (info.v.linesIndex == basedIndex)
+                {
+                    currentOriginalIndex = info.i;
+                    break;
+                }
+            }
+            //Reset previous block status to String.Empty
+            if (bottomTranslatedBlockIndex > -1 && topTranslatedBlockIndex > -1)
+            {
+                for (int i = topTranslatedBlockIndex; i <= bottomTranslatedBlockIndex; i++)
+                {
+                    translatedListDataList[i].status = String.Empty;
+                }
+            }
+            if (!SetCurrentBlock(currentTranslatedIndex, translatedItemSource, out topTranslatedBlockIndex, out bottomTranslatedBlockIndex))
+            {
+                return;
+            }
+            if (!SetCurrentBlock(currentOriginalIndex, originalListDataList, out topOriginalBlockIndex, out bottomOriginalBlockIndex))
+            {
+                return;
+            }
+            //Set status to Current Block
+            for (int i = topTranslatedBlockIndex; i <= bottomTranslatedBlockIndex; i++)
+            {
+                translatedListDataList[i].status = "Current Block";
+            }
             GetTextValue();
             PlayAnimation();
         }
@@ -273,20 +363,14 @@ namespace AAT_Script_Visualizer
             translatedListView.ScrollIntoView(selectedItem);
         }
 
-        private void SetCurrentBlock(int currentIndex, List<ListData> itemSource)
+        private bool SetCurrentBlock(int currentIndex, List<ListData> itemSource, out int topBlockIndex, out int bottomBlockIndex)
         {
+            bottomBlockIndex = -1;
+            topBlockIndex = -1;
             //Error prevention if currentIndex is less than zero or more than itemSource.Count
             if (currentIndex < 0 || currentIndex > itemSource.Count)
             {
-                return;
-            }
-            //Reset previous block status to String.Empty
-            if (bottomBlockIndex != null && topBlockIndex != null)
-            {
-                for (int i = topBlockIndex; i <= bottomBlockIndex; i++)
-                {
-                    translatedListDataList[i].status = String.Empty;
-                }
+                return false;
             }
             //Get top index by find up from currentIndex
             for (int i = currentIndex - 1; i >= 0; i--)
@@ -304,7 +388,7 @@ namespace AAT_Script_Visualizer
                     break;
                 }
             }
-            //Get buttom index by find down from currentIndex
+            //Get bottom index by find down from currentIndex
             for (int i = currentIndex; i < itemSource.Count; i++)
             {
                 if (itemSource[i].flag.Equals("Removed")) continue;
@@ -314,12 +398,17 @@ namespace AAT_Script_Visualizer
                     bottomBlockIndex = i;
                     break;
                 }
+                if (i == itemSource.Count - 1)
+                {
+                    MessageBox.Show(
+                        $"Text Box Ending Command is not found\n" +
+                        $"Aborting...",
+                        "Error: SetCurrentBlock",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return false;
+                }
             }
-            //Set status to Current Block
-            for (int i = topBlockIndex; i <= bottomBlockIndex; i++)
-            {
-                translatedListDataList[i].status = "Current Block";
-            }
+            return true;
         }
         #endregion
         
@@ -345,54 +434,53 @@ namespace AAT_Script_Visualizer
             {
                 return;
             }
-            for (int i = topBlockIndex; i <= bottomBlockIndex; i++)
+            for (int i = topOriginalBlockIndex; i <= bottomOriginalBlockIndex; i++)
             {
-                simplifiedTranslatedText += ExtractCommand(translatedListDataList, i, true);
-                simplifiedOriginalText += ExtractCommand(originalListDataList, i, true);
+                simplifiedOriginalText += ExtractCommand(originalListDataList, i);
+            }
+            for (int i = topTranslatedBlockIndex; i <= bottomTranslatedBlockIndex; i++)
+            {
+                simplifiedTranslatedText += ExtractCommand(translatedListDataList, i);
             }
         }
-        private string ExtractCommand(List<ListData> listDataList, int index, bool simplify)
+        private string ExtractCommand(List<ListData> listDataList, int index)
         {
             string extractedText = String.Empty;
             if (listDataList[index].command == "Text" && !listDataList[index].flag.Equals("Removed"))
             {
                 var firstString =
                     listDataList[index].value.Substring(1, listDataList[index].value.Length - 1);
-                if (simplify)
-                {
-                    extractedText = firstString.Substring(0, firstString.LastIndexOf('"'));
-                }
-                else
-                {
-                    extractedText = $"[T:{firstString.Substring(0, firstString.LastIndexOf('"'))}]#";
-                }
-                
+                extractedText = firstString.Substring(0, firstString.LastIndexOf('"'));
             }
             if (listDataList[index].command == "NewLine" && !listDataList[index].flag.Equals("Removed"))
             {
-                if (simplify)
-                {
-                    extractedText = "\n";
-                }
-                else
-                {
-                    extractedText = "[NL]#";
-                }
+                extractedText = "\n";
             }
             return extractedText;
         }
         //https://stackoverflow.com/a/3431848//
         //I modify this one slightly to fit the purpose.
-        //private static int messageTime = 50;
-        private static string rawText = String.Empty;
-        public void TextAnimation(List<ListData> itemSource, TextBlock txt)
+        private List<Storyboard> currentStories = new List<Storyboard>();
+        private List<EventHandler> currentEvents = new List<EventHandler>();
+        public void TextAnimation(List<ListData> itemSource, TextBlock txt, int topBlockIndex, int bottomBlockIndex)
         {
+            //Unsub previous event to prevent apply color collision
+            if (currentStories.Count >= 2)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    currentStories[i].Completed -= currentEvents[i];
+                }
+                currentStories.Clear();
+                currentEvents.Clear();
+            }
             int keyTime = 0;
             string animationText = String.Empty;
             int messageTime = 50;
-            bool hasSMT = false; 
-            bool hasSPI = false;
+            bool hasSMT = false; //has SetMessageTime
+            bool hasSPI = false; //has SetSpeakerId
             txt.TextAlignment = TextAlignment.Left;
+            txt.BeginAnimation(TextBlock.TextProperty, null);
             Storyboard story = new Storyboard();
             story.FillBehavior = FillBehavior.HoldEnd;
             DiscreteStringKeyFrame discreteStringKeyFrame;
@@ -518,11 +606,14 @@ namespace AAT_Script_Visualizer
             Storyboard.SetTargetName(stringAnimationUsingKeyFrames, txt.Name);
             Storyboard.SetTargetProperty(stringAnimationUsingKeyFrames, new PropertyPath(TextBlock.TextProperty));
             story.Children.Add(stringAnimationUsingKeyFrames);
-            story.Completed += (o, e) => ApplyColor(itemSource, txt);
+            EventHandler newEvent = (o, e) => ApplyColor(itemSource, txt, topBlockIndex, bottomBlockIndex);
+            currentEvents.Add(newEvent);
+            story.Completed += newEvent;
             story.Begin(txt);
+            currentStories.Add(story);
         }
 
-        private void SetSpeakerName(List<ListData> itemSource, Label[] speakerLabels, bool isOriginal)
+        private void SetSpeakerName(List<ListData> itemSource, Label[] speakerLabels, bool isOriginal, int bottomBlockIndex)
         {
             string speakerName = String.Empty;
             string[] markup = { @"<SetSpeakerId>", @"</SetSpeakerId>" };
@@ -617,7 +708,8 @@ namespace AAT_Script_Visualizer
             }
             return false;
         }
-        private async void ApplyColor(List<ListData> itemSource, TextBlock txt)
+        
+        private async void ApplyColor(List<ListData> itemSource, TextBlock txt, int topBlockIndex, int bottomBlockIndex)
         {
             bool hasSTC = false;
             SolidColorBrush textBrush = Brushes.White;
@@ -723,9 +815,11 @@ namespace AAT_Script_Visualizer
         
         #region Command Modification
         private bool _allowEditing = false;
-        private bool _modified = false;
         private bool _allowRemove = false;
+        private bool _allowAddition = false;
+        private bool _modified = false;
         private bool _removed = false;
+        private bool _added = false;
         private ListViewItem currentItem = null;
         private ContextMenu cm = null;
         private Label lb = null;
@@ -735,13 +829,13 @@ namespace AAT_Script_Visualizer
             get => _allowEditing;
             set { _allowEditing = value; OnPropertyChanged("allowEditing"); }
         }
-
+        
         public bool modified
         {
             get => _modified;
             set { _modified = value; OnPropertyChanged("modified"); }
         }
-
+        
         public bool removed
         {
             get
@@ -756,7 +850,7 @@ namespace AAT_Script_Visualizer
                 OnPropertyChanged("inverseRemoved");
             }
         }
-
+        
         public bool inverseRemoved
         {
             get 
@@ -768,8 +862,20 @@ namespace AAT_Script_Visualizer
                 return !_removed;
             }
         }
+
+        public bool added
+        {
+            get => _added;
+            set { _added = value; OnPropertyChanged("added"); }
+        }
+
+        public bool allowAdded
+        {
+            get => _allowAddition;
+            set { _allowAddition = value; OnPropertyChanged("allowAdded"); }
+        }
         
-        private void ListViewRightMouseClick(object sender, MouseButtonEventArgs e)
+        private void ListViewItem_OnRightMouseClick(object sender, MouseButtonEventArgs e)
         {
             ListViewItem listViewItem = sender as ListViewItem;
             currentItem = listViewItem;
@@ -780,13 +886,31 @@ namespace AAT_Script_Visualizer
             var value = listData.value;
             var lineIndex = listData.linesIndex;
             var flag = listData.flag;
+            cm = FindResource("listViewItemContextMenu") as ContextMenu;
+            MenuItem addTopMenuItem = LogicalTreeHelper.FindLogicalNode(cm, "addTopMenuItem") as MenuItem;
+            MenuItem addBottomMenuItem = LogicalTreeHelper.FindLogicalNode(cm, "addBottomMenuItem") as MenuItem;
+            addTopMenuItem.Items.Clear();
+            addBottomMenuItem.Items.Clear();
+            string[] allowedAdditionCommands = new[]
+                { "Text", "SetMessageTime", "SetTextFlag", "SetTextColor", "SetSpeakerId", "Wait", "NewLine", "ReadKey", "ClearText" };
+            foreach (var s in allowedAdditionCommands)
+            {
+                MenuItem newMenuItem = new MenuItem();
+                newMenuItem.Name = $"{s}MenuItem";
+                newMenuItem.Header = s;
+                addTopMenuItem.Items.Add(newMenuItem);
+                newMenuItem = new MenuItem();
+                newMenuItem.Name = $"{s}MenuItem";
+                newMenuItem.Header = s;
+                addBottomMenuItem.Items.Add(newMenuItem);
+            }
             allowEditing =
                 new[] { "Text", "SetMessageTime", "SetTextFlag", "SetTextColor", "SetSpeakerId", "Wait" }.Any(s =>
                     command.Equals(s));
-            _allowRemove = !(new[] { "ReadKey", "ClearText", "Op_" }.Any(s => command.Contains(s)));
+            _allowRemove = !(new[] { "Op_" }.Any(s => command.Contains(s)));
             modified = flag.Equals("Modified");
             removed = flag.Equals("Removed");
-            cm = FindResource("listViewItemContextMenu") as ContextMenu;
+            added = flag.Equals("Added");
             cm.PlacementTarget = listViewItem;
             cm.IsOpen = true;
             if (allowEditing)
@@ -794,30 +918,106 @@ namespace AAT_Script_Visualizer
                 lb = LogicalTreeHelper.FindLogicalNode(cm, "currentValueLabel") as Label;
                 tb = LogicalTreeHelper.FindLogicalNode(cm, "newValueBox") as TextBox;
                 lb.Content = $"Current Value: {listData.value}";
+                tb.Text = String.Empty;
             }
         }
         private void RemoveCommand_OnClick(object sender, RoutedEventArgs e)
         {
-            (currentItem.Content as ListData).flag = "Removed";
+            ListData listData = currentItem.Content as ListData;
+            if (listData.flag.Equals("Modified"))
+            {
+                ResetValue();
+            }
+            if (listData.flag.Equals("Added"))
+            {
+                string tempString =
+                    $"{listData.linesIndex} █ {listData.command} █ {listData.value}";
+                tempAddedString.Remove(tempString);
+                translatedListDataList.Remove(currentItem.Content as ListData);
+                RefreshList();
+                return;
+            }
+            listData.flag = "Removed";
+            tempRemovedString.Add($"{listData.linesIndex}");
         }
         private void RevertRemoval_OnClick(object sender, RoutedEventArgs e)
         {
-            (currentItem.Content as ListData).flag = String.Empty;
+            ListData listData = currentItem.Content as ListData;
+            listData.flag = String.Empty;
+            tempRemovedString.Remove($"{listData.linesIndex}");
         }
         
         private void SaveValue_OnClick(object sender, RoutedEventArgs e)
         {
             ListData listData = currentItem.Content as ListData;
             string oldValue = listData.value;
-            listData.value = tb.Text;
+            string newValue = String.Empty;
+            newValue = tb.Text;
+            if (!listData.command.Equals("Text") && (!int.TryParse(newValue, out var valueTest) || valueTest < 0))
+            {
+                MessageBox.Show(
+                    $"Input value is invalid!\n" +
+                    $"Aborting...",
+                    "Error: SaveValue_OnClick",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            if (listData.command.Equals("Text"))
+            {
+                int firstQuoteIndex = newValue.IndexOf('"');
+                int lastQuoteIndex = newValue.LastIndexOf('"');
+                if (firstQuoteIndex < 0 || lastQuoteIndex < 0 || firstQuoteIndex == lastQuoteIndex)
+                {
+                    MessageBox.Show(
+                        $"Input value is invalid!\n" +
+                        $"Aborting...",
+                        "Error: SaveValue_OnClick",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                string value = String.Empty;
+                for (int i = firstQuoteIndex; i <= lastQuoteIndex; i++)
+                {
+                    value += newValue[i];
+                }
+                newValue = value;
+            }
+            listData.value = newValue;
             if (!listData.flag.Equals("Added") && !listData.flag.Equals("Modified"))
             {
                 listData.flag = "Modified";
                 //Line Index / New Value / Old Value
-                tempModifiedString.Add($"{listData.linesIndex} / {listData.value} / {oldValue}");
+                tempModifiedString.Add($"{listData.linesIndex} █ {newValue} █ {oldValue}");
+                return;
+            }
+            if (listData.flag.Equals("Modified"))
+            {
+                foreach (var match in tempModifiedString.Select((v, i) => new {v, i}))
+                {
+                    if (match.v.Contains($"{listData.linesIndex}"))
+                    {
+                        string retainedOldValue = match.v.Split('█')[2].Trim();
+                        string replaceString = $"{listData.linesIndex} █ {newValue} █ {retainedOldValue}";
+                        tempModifiedString[match.i] = replaceString;
+                        break;
+                    }
+                }
+                return;
+            }
+            if (listData.flag.Equals("Added"))
+            {
+                foreach (var match in tempAddedString.Select((v, i) => new { v, i }))
+                {
+                    if (match.v.Equals($"{listData.linesIndex} █ {listData.command} █ {oldValue}"))
+                    {
+                        string replaceString = $"{listData.linesIndex} █ {listData.command} █ {newValue}";
+                        tempAddedString[match.i] = replaceString;
+                        break;
+                    }
+                }
             }
         }
-
+        
         private void CopyValue_OnClick(object sender, RoutedEventArgs e)
         {
             ListData listData = currentItem.Content as ListData;
@@ -825,21 +1025,101 @@ namespace AAT_Script_Visualizer
         }
         private void ResetValue_OnClick(object sender, RoutedEventArgs e)
         {
+            ResetValue();
+        }
+
+        private void ResetValue()
+        {
             ListData listData = currentItem.Content as ListData;
             listData.flag = String.Empty;
             for (int i = 0; i < tempModifiedString.Count; i++)
             {
-                if (listData.linesIndex.Equals(tempModifiedString[i].Split('/')[0].Trim()))
+                if (listData.linesIndex.Equals(tempModifiedString[i].Split('█')[0].Trim()))
                 {
-                    listData.value = tempModifiedString[i].Split('/')[2].Trim();
+                    listData.value = tempModifiedString[i].Split('█')[2].Trim();
                     tempModifiedString.RemoveAt(i);
                     break;
                 }
             }
+        }
 
+        
+        private void AddTop_OnClick(object sender, RoutedEventArgs e)
+        {
+            MenuItem currentMenuItem = sender as MenuItem;
+            AddNewCommand(currentMenuItem, true);
+        }
+
+        private void AddBottom_OnClick(object sender, RoutedEventArgs e)
+        {
+            MenuItem currentMenuItem = sender as MenuItem;
+            AddNewCommand(currentMenuItem, false);
+        }
+
+        private void AddNewCommand(MenuItem menuItem, bool isTop)
+        {
+            MenuItem currentMenuItem = menuItem;
+            ListView listView = ItemsControl.ItemsControlFromItemContainer(currentItem) as ListView;
+            List<ListData> itemSource = (listView.ItemsSource as List<ListData>);
+            int addedIndex = -1;
+            string currentItemLineIndex = String.Empty;
+            string defaultValue = "0";
+            bool isLast = false;
+            //Get added index by finding matching linesIndex
+            foreach (var info in itemSource.Select((v, i) => new {v, i}))
+            {
+                if (info.v.linesIndex == (currentItem.Content as ListData).linesIndex)
+                {
+                    addedIndex = info.i;
+                    currentItemLineIndex = info.v.linesIndex;
+                    break;
+                }
+                if (info.i == itemSource.Count)
+                {
+                    isLast = true;
+                    break;
+                }
+            }
+            if (currentMenuItem.Name.Equals("TextMenuItem"))
+            {
+                defaultValue = @"""""";
+            }
+            if (currentMenuItem.Name.Equals("NewLineMenuItem") || currentMenuItem.Name.Equals("ReadKeyMenuItem") ||
+                currentMenuItem.Name.Equals("ClearTextMenuItem"))
+            {
+                defaultValue = String.Empty;
+            }
+            if (currentItemLineIndex.Contains('-'))
+            {
+                currentItemLineIndex = currentItemLineIndex.Split('-')[0];
+            }
+            if (currentItemLineIndex.Contains('+'))
+            {
+                currentItemLineIndex = currentItemLineIndex.Split('+')[0];
+            }
+            currentItemLineIndex += isTop ? '-' : '+';
+            ListData newListData = new ListData()
+            {
+                linesIndex = $"{currentItemLineIndex}", command = currentMenuItem.Header.ToString(),
+                value = defaultValue, flag = "Added", status = String.Empty
+            };
+            string tempString =
+                $"{newListData.linesIndex} █ {newListData.command} █ {newListData.value}";
+            tempAddedString.Add(tempString);
+            addedIndex = isTop ? addedIndex : addedIndex + 1;
+            if (isLast && !isTop)
+            {
+                translatedListDataList.Add(newListData);
+            }
+            else
+            {
+                translatedListDataList.Insert(addedIndex, newListData);
+            }
+            RefreshList();
         }
         #endregion
         
+        #region INotifyPropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -851,7 +1131,7 @@ namespace AAT_Script_Visualizer
         {
             StopPlaying();
         }
-
+        #endregion
         
     }
 
@@ -893,35 +1173,6 @@ namespace AAT_Script_Visualizer
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-    //I stole the belows from StackOverflow lol
-    //https://stackoverflow.com/a/33166823//
-    public class LineLimitingBehavior : Behavior<TextBox>
-    {
-        public int? TextBoxMaxAllowedLines { get; set; }
-        
-        protected override void OnAttached()
-        {
-            if (TextBoxMaxAllowedLines != null && TextBoxMaxAllowedLines > 0)
-                AssociatedObject.TextChanged += OnTextBoxTextChanged;
-        }
-        
-        protected override void OnDetaching()
-        {
-            AssociatedObject.TextChanged -= OnTextBoxTextChanged;
-        }
-
-        private void OnTextBoxTextChanged(object sender, TextChangedEventArgs e)
-        {
-            TextBox textBox = (TextBox)sender;
-
-            int textLineCount = textBox.LineCount;
-
-            //Use Dispatcher to undo - http://stackoverflow.com/a/25453051/685341
-            if (textLineCount > TextBoxMaxAllowedLines.Value)
-                Dispatcher.BeginInvoke(DispatcherPriority.Input, (Action) (() => textBox.Undo()));
         }
     }
 }
