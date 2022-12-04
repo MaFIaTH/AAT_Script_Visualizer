@@ -45,5 +45,5 @@ Make sure that the script files (both original and translated) are already conve
 - Visit [Wiki][Wiki] for more information/usage/description.
 - Visit [FAQ][FAQ] for questions regarding usage/bugs/known problems.
 
-[FAQ]: https://github.com/MaFIaTH/AAT_Script_Visualizer/wiki/FAQ
-[Wiki]: https://github.com/MaFIaTH/AAT_Script_Visualizer/wiki
+[FAQ]: https://mafeeyawat.gitbook.io/aat-script-visualizer/faq
+[Wiki]: https://mafeeyawat.gitbook.io/aat-script-visualizer/
